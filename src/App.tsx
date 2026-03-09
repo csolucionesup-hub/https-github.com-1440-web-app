@@ -7,6 +7,7 @@ import { ObjectivesView } from './pages/ObjectivesView';
 import { ProjectsView } from './pages/ProjectsView';
 import { ActivitiesView } from './pages/ActivitiesView';
 import { HierarchicalView } from './pages/HierarchicalView';
+import { BankView } from './pages/BankView';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="objectives" element={<ObjectivesView />} />
           <Route path="activities" element={<ActivitiesView />} />
           <Route path="tasks" element={<HierarchicalView />} />
+          <Route path="bank" element={<BankView />} />
           <Route path="settings" element={<div className="p-8 glass rounded-xl">Ajustes del Ecosistema 1440</div>} />
         </Route>
       </Routes>

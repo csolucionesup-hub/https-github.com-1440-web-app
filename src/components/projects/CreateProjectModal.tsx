@@ -40,27 +40,26 @@ export const CreateProjectModal = ({ isOpen, onClose, goalId, projectToEdit }: P
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title.trim()) return;
-
-        if (projectToEdit) {
-            updateProject(projectToEdit.id, {
-                title,
-                description,
-                period,
-                status
-            });
-        } else {
-            addProject({
-                goalId,
-                title,
-                description,
-                period,
-                status: status,
-                progress: 0,
-                order: 0,
-            });
+        if (title.trim()) {
+            if (projectToEdit) {
+                updateProject(projectToEdit.id, {
+                    title: title.trim(),
+                    description: description.trim(),
+                    period,
+                    status,
+                });
+            } else {
+                addProject({
+                    goalId,
+                    title: title.trim(),
+                    description: description.trim(),
+                    period,
+                    status,
+                    order: projects.filter(p => p.goalId === goalId).length,
+                });
+            }
+            onClose();
         }
-
         // Reset
         setTitle('');
         setDescription('');

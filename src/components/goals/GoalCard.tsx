@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Goal } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
-import { Flag, Clock, CalendarDays, MoreVertical, Edit2 } from 'lucide-react';
+import { Flag, Clock, CalendarDays, MoreVertical, Edit2, TrendingUp } from 'lucide-react';
 import { ConfirmDeleteModal } from '../ui/ConfirmDeleteModal';
+import { getGoalStats } from '../../utils/progressAnalytics';
 
 interface GoalCardProps {
   goal: Goal;
@@ -10,7 +11,7 @@ interface GoalCardProps {
 }
 
 export const GoalCard = ({ goal, onEdit }: GoalCardProps) => {
-  const { updateGoal, deleteGoal } = useAppStore();
+  const { updateGoal, deleteGoal, projects, objectives, activities, workSessions } = useAppStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -48,6 +49,8 @@ export const GoalCard = ({ goal, onEdit }: GoalCardProps) => {
   };
 
   const isCompleted = goal.status === 'completed' || goal.status === 'completed_early';
+  const stats = getGoalStats(goal.id, projects, objectives, activities, workSessions);
+  const autoProgress = stats.progress;
 
   return (
     <div className={`glass rounded-2xl p-6 transition-all duration-300 relative group overflow-hidden ${isCompleted ? 'opacity-70' : ''}`} style={{ borderTop: `4px solid ${goal.color}` }}>
@@ -128,6 +131,19 @@ export const GoalCard = ({ goal, onEdit }: GoalCardProps) => {
           <p className="text-xs text-slate-300 font-medium italic text-center">"{goal.motto}"</p>
         </div>
       )}
+
+      <div className="mb-6">
+        <div className="flex justify-between text-xs mb-1.5">
+          <span className="text-slate-400 font-medium">Progreso Global (Tiempo)</span>
+          <span className="text-white font-bold">{autoProgress}%</span>
+        </div>
+        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden shadow-inner">
+          <div
+            className={`h-full rounded-full transition-all duration-1000 ${isCompleted ? 'bg-emerald-500' : 'bg-gradient-to-r from-sky-400 to-indigo-500'}`}
+            style={{ width: `${autoProgress}%`, backgroundColor: isCompleted ? undefined : goal.color }}
+          />
+        </div>
+      </div>
 
       <div className="flex items-center gap-4 mt-auto border-t border-white/5 pt-4">
         <div className="flex items-center gap-1.5 text-xs text-slate-400">

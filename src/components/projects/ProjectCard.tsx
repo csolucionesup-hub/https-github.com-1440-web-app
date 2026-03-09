@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Project } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
-import { CalendarDays, MoreVertical, Target } from 'lucide-react';
+import { CalendarDays, MoreVertical, Target, Clock } from 'lucide-react';
 import { ConfirmDeleteModal } from '../ui/ConfirmDeleteModal';
+import { getProjectStats } from '../../utils/progressAnalytics';
 
 interface Props {
     project: Project;
@@ -10,15 +11,14 @@ interface Props {
 }
 
 export const ProjectCard = ({ project, onEdit }: Props) => {
-    const { updateProject, deleteProject, objectives } = useAppStore();
+    const { updateProject, deleteProject, objectives, activities, workSessions } = useAppStore();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
-    // Calculate progress based on objectives if needed, or use the manual progress field
     const relatedObjectives = objectives.filter(o => o.projectId === project.id);
-    const completedObjectives = relatedObjectives.filter(o => o.status === 'completed' || o.status === 'completed_early');
-    const autoProgress = relatedObjectives.length > 0 ? Math.round((completedObjectives.length / relatedObjectives.length) * 100) : project.progress;
+    const stats = getProjectStats(project.id, objectives, activities, workSessions);
+    const autoProgress = stats.progress;
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

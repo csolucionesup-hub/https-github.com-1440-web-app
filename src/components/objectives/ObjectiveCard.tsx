@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Objective } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
-import { CalendarDays, MoreVertical, LayoutDashboard } from 'lucide-react';
+import { CalendarDays, MoreVertical, LayoutDashboard, Clock } from 'lucide-react';
 import { ConfirmDeleteModal } from '../ui/ConfirmDeleteModal';
+import { getObjectiveStats } from '../../utils/progressAnalytics';
 
 interface Props {
     objective: Objective;
@@ -10,14 +11,14 @@ interface Props {
 }
 
 export const ObjectiveCard = ({ objective, onEdit }: Props) => {
-    const { updateObjective, deleteObjective, activities } = useAppStore();
+    const { updateObjective, deleteObjective, activities, workSessions } = useAppStore();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     const relatedActivities = activities.filter(a => a.objectiveId === objective.id);
-    const completedActivities = relatedActivities.filter(a => a.status === 'completed' || a.status === 'completed_early');
-    const autoProgress = relatedActivities.length > 0 ? Math.round((completedActivities.length / relatedActivities.length) * 100) : objective.progress;
+    const stats = getObjectiveStats(objective.id, activities, workSessions);
+    const autoProgress = stats.progress;
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

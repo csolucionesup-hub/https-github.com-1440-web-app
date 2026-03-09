@@ -36,28 +36,26 @@ export const CreateObjectiveModal = ({ isOpen, onClose, projectId, objectiveToEd
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title.trim()) return;
-
-        if (objectiveToEdit) {
-            updateObjective(objectiveToEdit.id, {
-                title,
-                description,
-                period,
-                status
-            });
-        } else {
-            addObjective({
-                projectId,
-                title,
-                description,
-                period,
-                status,
-                progress: 0,
-                order: 0,
-            });
-        }
-
-        onClose();
+        if (title.trim()) {
+            if (objectiveToEdit) {
+                updateObjective(objectiveToEdit.id, {
+                    title: title.trim(),
+                    description: description.trim(),
+                    period,
+                    status,
+                });
+            } else {
+                addObjective({
+                    projectId,
+                    title: title.trim(),
+                    description: description.trim(),
+                    period,
+                    status,
+                    order: 0, // This line was originally `order: 0,` and `progress: 0,` was removed. The instruction only asked to remove `progress: 0`.
+                });
+            }
+            onClose();
+        };
     };
 
     return (

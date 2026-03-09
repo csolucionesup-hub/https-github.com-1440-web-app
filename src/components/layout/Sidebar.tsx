@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Target, CheckCircle, Crosshair, Settings, Clock } from 'lucide-react';
+import { LayoutDashboard, Target, CheckCircle, Crosshair, Settings, Clock, Archive } from 'lucide-react';
 
 const navItems = [
     { path: '/', icon: Clock, label: '1440 Minutos' },
@@ -9,6 +9,7 @@ const navItems = [
     { path: '/objectives', icon: CheckCircle, label: 'Objetivos' },
     { path: '/activities', icon: LayoutDashboard, label: 'Actividades' },
     { path: '/tasks', icon: CheckCircle, label: 'Plan de Acción' },
+    { path: '/bank', icon: Archive, label: 'El Banco' },
     { path: '/settings', icon: Settings, label: 'Ajustes' },
 ];
 

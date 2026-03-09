@@ -3,6 +3,7 @@ import { Activity } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
 import { CalendarDays, MoreVertical, ListTodo } from 'lucide-react';
 import { ConfirmDeleteModal } from '../ui/ConfirmDeleteModal';
+import { getActivityStats } from '../../utils/progressAnalytics';
 
 interface Props {
     activity: Activity;
@@ -10,14 +11,14 @@ interface Props {
 }
 
 export const ActivityCard = ({ activity, onEdit }: Props) => {
-    const { updateActivity, deleteActivity, tasks } = useAppStore();
+    const { updateActivity, deleteActivity, tasks, workSessions } = useAppStore();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     const relatedTasks = tasks.filter(t => t.activityId === activity.id);
-    const completedTasks = relatedTasks.filter(t => t.status === 'completed' || t.status === 'completed_early');
-    const autoProgress = relatedTasks.length > 0 ? Math.round((completedTasks.length / relatedTasks.length) * 100) : 0;
+    const stats = getActivityStats(activity.id, workSessions);
+    const autoProgress = stats.progress;
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -57,7 +58,8 @@ export const ActivityCard = ({ activity, onEdit }: Props) => {
     const periodLabels = {
         monthly: 'Mensual',
         bimonthly: 'Bimestral',
-        weekly: 'Semanal'
+        weekly: 'Semanal',
+        daily: 'Diaria'
     };
 
     const isCompleted = activity.status === 'completed' || activity.status === 'completed_early';
@@ -135,7 +137,7 @@ export const ActivityCard = ({ activity, onEdit }: Props) => {
 
             <div className="mb-4">
                 <div className="flex justify-between text-xs mb-1.5">
-                    <span className="text-slate-400 font-medium">Progreso Tareas</span>
+                    <span className="text-slate-400 font-medium">Progreso en Tiempo</span>
                     <span className="text-purple-400 font-bold">{autoProgress}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">

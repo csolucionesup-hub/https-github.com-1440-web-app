@@ -12,6 +12,7 @@ export interface Goal {
   title: string;
   description?: string;
   status: EntityStatus;
+  statusUpdatedAt?: string;
   period: 'annual' | 'quarterly';
   startDate?: string;
   deadline?: string;
@@ -30,7 +31,7 @@ export interface Project {
   description?: string;
   period: 'semester' | 'quarterly' | 'monthly';
   status: EntityStatus;
-  progress: number;
+  statusUpdatedAt?: string;
   startDate?: string;
   deadline?: string;
   order: number;
@@ -45,7 +46,7 @@ export interface Objective {
   description?: string;
   period: 'quarterly' | 'monthly' | 'bimonthly';
   status: EntityStatus;
-  progress: number;
+  statusUpdatedAt?: string;
   startDate?: string;
   deadline?: string;
   order: number;
@@ -58,35 +59,50 @@ export interface Activity {
   objectiveId: string; // Belongs to Objective
   title: string;
   description?: string;
-  period: 'monthly' | 'bimonthly' | 'weekly';
+  period: 'monthly' | 'bimonthly' | 'weekly' | 'daily';
   status: EntityStatus;
+  statusUpdatedAt?: string;
   startDate?: string;
   deadline?: string;
   order: number;
   completedAt?: string;
   createdAt: string;
+
+  // 1440 minutes tracking
+  plannedDaysOfWeek?: number[]; // [0, 1, 2, 3, 4, 5, 6] 0 = Sunday
+  plannedMinutesPerSession?: number;
+  priority?: 'low' | 'medium' | 'high' | 'critical';
 }
 
-export interface Task {
+export interface Task { // Action Plan
   id: string;
   activityId: string; // Belongs to Activity
   title: string;
   description?: string;
   period: 'weekly' | 'daily';
   status: EntityStatus;
+  statusUpdatedAt?: string;
   startDate?: string;
   deadline?: string;
   order: number;
   completedAt?: string;
-  linkedTimeBlockId?: string; // Vinculo con sistema 1440
   createdAt: string;
 }
 
-export interface TimeBlock {
+export interface WorkSession {
   id: string;
-  startTime: string; // "HH:mm"
-  duration: number; // in minutes
-  taskId?: string; // id de la tarea vinculada o nulo para tiempo general
-  label: string;
-  color?: string;
+  activityId: string;
+  actionPlanIds?: string[]; // IDs de Tasks/Plan de acción cruzados
+  date: string; // "YYYY-MM-DD"
+  startTime?: string; // "HH:mm"
+  endTime?: string; // "HH:mm"
+  plannedMinutes: number;
+  actualMinutes: number;
+  status: 'planned' | 'completed' | 'skipped' | 'partial';
+  notes?: string;
+}
+
+export interface DailySettings {
+  sleepMinutes: number; // e.g. 480 (8 hrs)
+  fixedRoutineMinutes: number; // e.g. 120 (meals, transport)
 }

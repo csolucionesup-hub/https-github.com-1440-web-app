@@ -15,8 +15,11 @@ export const CreateActivityModal = ({ isOpen, onClose, objectiveId, activityToEd
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [period, setPeriod] = useState<'monthly' | 'bimonthly' | 'weekly'>('weekly');
+    const [period, setPeriod] = useState<'monthly' | 'bimonthly' | 'weekly' | 'daily'>('weekly');
     const [status, setStatus] = useState<EntityStatus>('in_progress');
+    const [plannedMinutesPerSession, setPlannedMinutesPerSession] = useState<number>(60);
+    const [priority, setPriority] = useState<Activity['priority']>('medium');
+    const [plannedDaysOfWeek, setPlannedDaysOfWeek] = useState<number[]>([]);
 
     React.useEffect(() => {
         if (activityToEdit && isOpen) {
@@ -24,15 +27,27 @@ export const CreateActivityModal = ({ isOpen, onClose, objectiveId, activityToEd
             setDescription(activityToEdit.description || '');
             setPeriod(activityToEdit.period);
             setStatus(activityToEdit.status);
+            setPlannedMinutesPerSession(activityToEdit.plannedMinutesPerSession || 60);
+            setPriority(activityToEdit.priority || 'medium');
+            setPlannedDaysOfWeek(activityToEdit.plannedDaysOfWeek || []);
         } else if (isOpen) {
             setTitle('');
             setDescription('');
             setPeriod('weekly');
             setStatus('in_progress');
+            setPlannedMinutesPerSession(60);
+            setPriority('medium');
+            setPlannedDaysOfWeek([]);
         }
     }, [activityToEdit, isOpen]);
 
     if (!isOpen || !objectiveId) return null;
+
+    const toggleDay = (dayIndex: number) => {
+        setPlannedDaysOfWeek(prev =>
+            prev.includes(dayIndex) ? prev.filter(d => d !== dayIndex) : [...prev, dayIndex].sort()
+        );
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,19 +55,25 @@ export const CreateActivityModal = ({ isOpen, onClose, objectiveId, activityToEd
 
         if (activityToEdit) {
             updateActivity(activityToEdit.id, {
-                title,
-                description,
+                title: title.trim(),
+                description: description.trim(),
                 period,
-                status
+                status,
+                plannedMinutesPerSession,
+                priority,
+                plannedDaysOfWeek
             });
         } else {
             addActivity({
                 objectiveId,
-                title,
-                description,
+                title: title.trim(),
+                description: description.trim(),
                 period,
                 status,
                 order: 0,
+                plannedMinutesPerSession,
+                priority,
+                plannedDaysOfWeek
             });
         }
 
@@ -103,13 +124,30 @@ export const CreateActivityModal = ({ isOpen, onClose, objectiveId, activityToEd
                                 onChange={(e) => setPeriod(e.target.value as any)}
                                 className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 cursor-pointer"
                             >
+                                <option value="daily" className="bg-slate-900 text-white">Diaria</option>
                                 <option value="weekly" className="bg-slate-900 text-white">Semanal</option>
                                 <option value="bimonthly" className="bg-slate-900 text-white">Bimestral</option>
                                 <option value="monthly" className="bg-slate-900 text-white">Mensual</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Estado</label>
+                            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Prioridad</label>
+                            <select
+                                value={priority}
+                                onChange={(e) => setPriority(e.target.value as any)}
+                                className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                            >
+                                <option value="low" className="bg-slate-900 text-white">Baja</option>
+                                <option value="medium" className="bg-slate-900 text-white">Media</option>
+                                <option value="high" className="bg-slate-900 text-white">Alta</option>
+                                <option value="critical" className="bg-slate-900 text-white">Crítica</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Estado Inicial</label>
                             <select
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value as any)}
@@ -120,6 +158,38 @@ export const CreateActivityModal = ({ isOpen, onClose, objectiveId, activityToEd
                                 <option value="paused" className="bg-slate-900 text-white">Pausada</option>
                                 {activityToEdit && <option value="completed" className="bg-emerald-900 text-emerald-100">Completada</option>}
                             </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Minutos Reales por Sesión</label>
+                            <input
+                                type="number"
+                                required
+                                min="1"
+                                max="1440"
+                                value={plannedMinutesPerSession}
+                                onChange={(e) => setPlannedMinutesPerSession(Number(e.target.value))}
+                                className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all font-medium"
+                                placeholder="Ej: 60"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-300 mb-1.5">Días Planificados (Opcional)</label>
+                        <div className="flex justify-between gap-1">
+                            {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day, idx) => (
+                                <button
+                                    key={day}
+                                    type="button"
+                                    onClick={() => toggleDay(idx)}
+                                    className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${plannedDaysOfWeek.includes(idx)
+                                            ? 'bg-purple-500 text-white'
+                                            : 'bg-slate-900 text-slate-400 border border-white/5 hover:bg-slate-800 hover:text-white'
+                                        }`}
+                                >
+                                    {day}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
