@@ -1,28 +1,102 @@
-import { DailySettings, WorkSession } from '../types';
+// ===============================
+// 1440 MINUTES ENGINE
+// ===============================
 
-const MINUTES_IN_DAY = 1440;
+export const MINUTES_PER_DAY = 1440;
 
-export const getDailyTimeStats = (date: string, dailySettings: DailySettings, workSessions: WorkSession[]) => {
-    const sessionsToday = workSessions.filter(ws => ws.date === date);
-    const plannedWorkMinutes = sessionsToday.reduce((acc, curr) => acc + curr.plannedMinutes, 0);
-    const actualWorkMinutes = sessionsToday.reduce((acc, curr) => acc + curr.actualMinutes, 0);
+// --------------------------------
+// Rutinas del día
+// --------------------------------
 
-    const fixedMinutes = dailySettings.sleepMinutes + dailySettings.fixedRoutineMinutes;
-    const availableMinutes = Math.max(0, MINUTES_IN_DAY - fixedMinutes);
-    const remainingActionableMinutes = Math.max(0, availableMinutes - plannedWorkMinutes);
+export interface DailyRoutine {
+  sleepMinutes: number;
+  fixedRoutineMinutes: number;
+}
 
-    return {
-        total1440: MINUTES_IN_DAY,
-        fixed: fixedMinutes,
-        available: availableMinutes,
-        plannedWork: plannedWorkMinutes,
-        actualWork: actualWorkMinutes,
-        remainingActionable: remainingActionableMinutes,
-        isSaturated: plannedWorkMinutes > availableMinutes
-    };
-};
+// --------------------------------
+// Work session
+// --------------------------------
 
-export const canScheduleActivity = (date: string, requestedMinutes: number, dailySettings: DailySettings, workSessions: WorkSession[]): boolean => {
-    const stats = getDailyTimeStats(date, dailySettings, workSessions);
-    return stats.remainingActionable >= requestedMinutes;
-};
+export interface WorkSession {
+  startTime: number;
+  endTime: number;
+}
+
+// --------------------------------
+// Minutos disponibles del día
+// --------------------------------
+
+export function calculateAvailableMinutes(
+  routine: DailyRoutine
+): number {
+
+  const used =
+    routine.sleepMinutes +
+    routine.fixedRoutineMinutes;
+
+  return MINUTES_PER_DAY - used;
+}
+
+// --------------------------------
+// Minutos planificados
+// --------------------------------
+
+export function calculatePlannedMinutes(
+  sessions: WorkSession[]
+): number {
+
+  return sessions.reduce((total, s) => {
+
+    const duration = s.endTime - s.startTime;
+
+    return total + duration;
+
+  }, 0);
+
+}
+
+// --------------------------------
+// Validar exceso de minutos
+// --------------------------------
+
+export function exceedsAvailableMinutes(
+  sessions: WorkSession[],
+  routine: DailyRoutine
+): boolean {
+
+  const planned = calculatePlannedMinutes(sessions);
+
+  const available = calculateAvailableMinutes(routine);
+
+  return planned > available;
+
+}
+
+// --------------------------------
+// Detectar solapamientos
+// --------------------------------
+
+export function detectOverlaps(
+  sessions: WorkSession[]
+): boolean {
+
+  const sorted = [...sessions].sort(
+    (a, b) => a.startTime - b.startTime
+  );
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+
+    const current = sorted[i];
+    const next = sorted[i + 1];
+
+    if (current.endTime > next.startTime) {
+
+      return true;
+
+    }
+
+  }
+
+  return false;
+
+}
