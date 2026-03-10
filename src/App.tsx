@@ -1,31 +1,53 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Layout } from './components/layout/Layout';
-import { Daily1440View } from './pages/Daily1440View';
-import { GoalsView } from './pages/GoalsView';
-import { ObjectivesView } from './pages/ObjectivesView';
-import { ProjectsView } from './pages/ProjectsView';
-import { ActivitiesView } from './pages/ActivitiesView';
-import { HierarchicalView } from './pages/HierarchicalView';
-import { BankView } from './pages/BankView';
+import React from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-function App() {
+import Sidebar from "./components/layout/Sidebar";
+import Daily1440View from "./pages/Daily1440View";
+import GoalsView from "./pages/GoalsView";
+import ProjectsView from "./pages/ProjectsView";
+import ObjectivesView from "./pages/ObjectivesView";
+import ActivitiesView from "./pages/ActivitiesView";
+import HierarchicalView from "./pages/HierarchicalView";
+import BankView from "./pages/BankView";
+
+function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Daily1440View />} />
-          <Route path="goals" element={<GoalsView />} />
-          <Route path="projects" element={<ProjectsView />} />
-          <Route path="objectives" element={<ObjectivesView />} />
-          <Route path="activities" element={<ActivitiesView />} />
-          <Route path="tasks" element={<HierarchicalView />} />
-          <Route path="bank" element={<BankView />} />
-          <Route path="settings" element={<div className="p-8 glass rounded-xl">Ajustes del Ecosistema 1440</div>} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "88px 1fr",
+        minHeight: "100vh",
+        background: "#0B1220",
+      }}
+    >
+      <Sidebar />
+      <main
+        style={{
+          minHeight: "100vh",
+          overflow: "auto",
+        }}
+      >
+        {children}
+      </main>
+    </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppLayout>
+        <Routes>
+          <Route path="/" element={<Daily1440View />} />
+          <Route path="/goals" element={<GoalsView />} />
+          <Route path="/projects" element={<ProjectsView />} />
+          <Route path="/objectives" element={<ObjectivesView />} />
+          <Route path="/activities" element={<ActivitiesView />} />
+          <Route path="/tasks" element={<HierarchicalView />} />
+          <Route path="/bank" element={<BankView />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AppLayout>
+    </BrowserRouter>
+  );
+}
