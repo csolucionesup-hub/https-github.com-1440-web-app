@@ -3,7 +3,7 @@ import Card from "../components/ui/Card";
 import DashboardMetrics from "../components/ui/DashboardMetrics";
 import ProgressBar from "../components/ui/ProgressBar";
 import MinutesGrid from "../components/ui/MinutesGrid";
-
+import WeeklyTrendChart from "../components/ui/WeeklyTrendChart";
 export default function Daily1440View() {
   const freeMinutes = 780;
   const plannedMinutes = 420;
@@ -160,6 +160,9 @@ export default function Daily1440View() {
         <div style={{ marginBottom: 24 }}>
           <MinutesGrid />
         </div>
+        <div style={{ marginBottom: 24 }}>
+  <WeeklyTrendChart />
+</div>
 
         <div
           style={{
